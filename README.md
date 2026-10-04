@@ -1,4 +1,3 @@
-# transit-transfer-reliability
 # Edmonton Transit Delay & Reliability Analysis
 
 Investigating when and where Edmonton Transit (ETS) bus delays are most likely to occur, using GTFS-Realtime data I collect myself.
