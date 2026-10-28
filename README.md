@@ -1,8 +1,8 @@
 # Will I Miss My Transfer? Edmonton Transit Transfer Reliability
 
-**Question:** Which Edmonton Transit (ETS) bus-to-bus connections are most likely to be missed, when, and how much buffer should a rider allow?
+**Question:** Which Edmonton Transit (ETS) bus-to-bus connections are most likely to be missed, when and how much buffer should a rider allow?
 
-I built a data pipeline that collects ETS realtime feeds, matches live bus delays to the published schedule, and labels each scheduled transfer as **made** or **missed**. This is a **preliminary analysis of six weekdays** (see [Limitations](#limitations)).
+I built a data pipeline that collects ETS realtime feeds, matches live bus delays to the published schedule and labels each scheduled transfer as **made** or **missed**. This is a **preliminary analysis of six weekdays** (see [Limitations](#limitations)).
 
 **Dashboard:** [Tableau Public link: not published yet]
 
