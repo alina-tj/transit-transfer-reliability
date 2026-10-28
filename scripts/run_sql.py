@@ -1,16 +1,13 @@
 """
 Run a .sql file against the project database and print the results of any
-SELECT statements. Avoids needing the sqlite3 command-line tool.
-
-Usage:
-    python scripts/run_sql.py sql/01_transfer_candidates.sql --db data/ets.db
+SELECT statements. (avoids needing the sqlite3 command-line tool.)
+Usage: python scripts/run_sql.py sql/01_transfer_candidates.sql --db data/ets.db
 """
 
 import argparse
 import sqlite3
 import time
 from pathlib import Path
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -44,7 +41,6 @@ def main():
                 print(f"ok ({time.time() - t0:.1f}s): {label[:70]}")
             conn.commit()
     conn.close()
-
 
 if __name__ == "__main__":
     main()
