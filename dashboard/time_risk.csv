@@ -1,0 +1,7 @@
+day_type,time_bucket,n,made,n_feeder_trips,avg_sched_window_min,avg_headway_after_min,success_rate,ci_low,ci_high,buffer_needed_min,expected_miss_cost_min,risk
+Weekday,1 Early (before 6),40,34,23,14.325,26.225,0.85,0.709,0.929,4.75,3.934,Medium risk
+Weekday,2 AM peak (6-9),274,189,155,9.04,19.384,0.69,0.633,0.742,6.94,6.013,High risk
+Weekday,3 Midday (9-15),1727,1535,456,12.218,25.532,0.889,0.873,0.903,7.0,2.839,Medium risk
+Weekday,4 PM peak (15-18),930,756,239,10.011,19.263,0.813,0.787,0.837,9.87,3.604,Medium risk
+Weekday,5 Evening (18-22),406,361,136,12.823,27.965,0.889,0.855,0.916,5.658,3.1,Medium risk
+Weekday,6 Late night (22+),89,72,51,12.303,39.886,0.809,0.715,0.877,4.903,7.619,Medium risk
