@@ -1,5 +1,5 @@
 -- 02_sanity_checks.sql
--- Run after 01_transfer_candidates.sql. Look at these before trusting anything downstream.
+-- Run after 01_transfer_candidates.sql. 
 
 SELECT COUNT(*) AS candidates FROM transfer_candidates;
 
@@ -21,7 +21,7 @@ GROUP BY feeder_route_name, connector_route_name
 ORDER BY n_candidates DESC
 LIMIT 25;
 
--- How concentrated are the candidates? (a few pairs dominating is a warning sign)
+-- How concentrated are the candidates? 
 SELECT COUNT(DISTINCT feeder_route_name || '>' || connector_route_name) AS distinct_route_pairs,
        COUNT(DISTINCT stop_id) AS stops_with_candidates
 FROM transfer_candidates;
