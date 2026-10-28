@@ -4,7 +4,7 @@
 
 I built a data pipeline that collects ETS realtime feeds, matches live bus delays to the published schedule, and labels each scheduled transfer as **made** or **missed**. This is a **preliminary analysis of six weekdays** (see [Limitations](#limitations)).
 
-**Dashboard:** [Tableau Public link: add after publishing]
+**Dashboard:** [Tableau Public link: not published yet]
 
 ## Key findings (weekdays, same-line variants excluded)
 
