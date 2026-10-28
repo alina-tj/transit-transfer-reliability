@@ -59,7 +59,7 @@ Route pairs with at least 20 observed transfers, lowest success rates first. **B
 | 915 to 004 | 27 | 74.1% | 55.3% to 86.8% | 7.5 min |
 | 004 to 915 | 73 | 76.7% | 65.8% to 84.9% | 8.4 min |
 
-These are small samples. The ranges are wide, so treat the ranking as a lead to investigate, not a verdict. Route 002 is the connector in three of the top six.
+These are small samples. The ranges are wide so treat the ranking as a lead to investigate, not a verdict. Route 002 is the connector in three of the top six.
 
 ### 4. Hub stops (descriptive)
 
@@ -79,7 +79,7 @@ Stop-level rates reflect the schedule design (which routes meet there, and how l
 1. **Collect.** `collector/collect.py` polls the ETS GTFS-Realtime TripUpdates and VehiclePositions feeds every 60 seconds into SQLite and logs every poll, including failures.
 2. **Schedule.** `collector/load_static_gtfs.py` loads the static GTFS schedule.
 3. **Candidate transfers.** `sql/01_transfer_candidates.sql` finds the 30 stops served by the most routes (at least 5). For each bus arriving at a hub, it takes the first scheduled departure of every other route at least 60 seconds later (within 30 minutes). Same-line variants (for example 918A and 918B) are flagged and can be excluded.
-4. **Outcomes.** `sql/10_transfer_outcomes.sql` takes the last realtime prediction for each trip at each stop. A transfer is **made** if the connector's actual departure is at least 60 seconds after the feeder's actual arrival, where actual = scheduled + reported delay.
+4. **Outcomes.** `sql/10_transfer_outcomes.sql` takes the last realtime prediction for each trip at each stop. A transfer is made if the connector's actual departure is at least 60 seconds after the feeder's actual arrival, where actual = scheduled + reported delay.
 5. **Risk tables.** `analysis/risk_score.py` computes success rates, 95% Wilson intervals, buffer needed, and risk labels (only for groups with at least 20 outcomes). It writes CSVs for Tableau into `dashboard/`.
 
 Data quality rules: a prediction only counts if it was made within 3 minutes of the event; delays beyond one hour are dropped; canceled trips and skipped stops are excluded.
@@ -87,7 +87,7 @@ Data quality rules: a prediction only counts if it was made within 3 minutes of 
 ## Limitations
 
 - **Small sample.** Six weekdays (Oct 16 and 19 to 23, 2026), 3,466 outcomes after exclusions. Oct 13 to 15 were not collected.
-- **Uneven coverage.** The collecting laptop slept at times, so mornings are covered more thinly than afternoons. I expect gaps to reduce the number of results rather than bias them, but I have not tested that.
+- **Uneven coverage.** The collecting laptop slept at times so mornings are covered more thinly than afternoons. I expect gaps to reduce the number of results rather than bias them but I have not tested that.
 - **Predictions, not observed arrivals.** Delays come from the feed's last prediction before the bus reached the stop. The feed mostly reports departure delays, so the feeder's departure delay stands in for its arrival delay.
 - **Plausible ranges are optimistic.** Transfers from the same trips and delay incidents are not independent.
 - **Same-stop transfers only.** Walking between bays or nearby stops is not modelled, and only 30 hub stops are covered.
@@ -111,7 +111,7 @@ python analysis/risk_score.py --weekday-only --exclude-same-line
 
 Contains information licensed under the City of Edmonton Open Data Agreement. Schedule (GTFS) and realtime feeds are published by the City of Edmonton / ETS.
 
-## Next steps
+## Next steps for this analysis
 
 - Collect several more weeks, especially morning rush, on an always-on machine.
 - Group nearby bays into a single transfer point.
