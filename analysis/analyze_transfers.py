@@ -2,7 +2,6 @@ import sqlite3
 import pandas as pd
 
 DB_PATH = "data/ets.db"
-
 conn = sqlite3.connect(DB_PATH)
 
 query = """
@@ -25,14 +24,14 @@ FROM transfer_outcomes
 df = pd.read_sql_query(query, conn)
 conn.close()
 
-# Convert seconds to minutes for easier interpretation.
+#Convert seconds to minutes for easier interpretation.
 df["sched_window_min"] = df["sched_window_secs"] / 60
 df["actual_window_min"] = df["actual_window_secs"] / 60
 df["feeder_delay_min"] = df["feeder_delay_secs"] / 60
 df["connector_delay_min"] = df["connector_delay_secs"] / 60
 df["slack_min"] = df["slack_secs"] / 60
 
-# Create analytical transfer-risk categories.
+#Create analytical transfer-risk categories.
 def risk_category(minutes):
     if minutes <= 3:
         return "Very tight"
@@ -45,14 +44,14 @@ def risk_category(minutes):
 
 df["risk_category"] = df["sched_window_min"].apply(risk_category)
 
-# Create a readable route-pair column.
+#Create a readable route-pair column.
 df["route_pair"] = (
     df["feeder_route_name"].astype(str)
     + " -> "
     + df["connector_route_name"].astype(str)
 )
 
-# Save the clean analysis dataset.
+#Save the clean analysis dataset.
 df.to_csv("data/transfer_outcomes.csv", index=False)
 
 print("Analysis dataset created.")
