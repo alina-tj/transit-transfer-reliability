@@ -1,6 +1,6 @@
 -- 00_collection_health.sql
 -- Run any time to see how well the collector is doing.
---   python scripts/run_sql.py sql/00_collection_health.sql --db data/ets.db
+--  python scripts/run_sql.py sql/00_collection_health.sql --db data/ets.db
 -- All times are shown in your computer's local time.
 
 -- 1. Polls by feed and outcome (ok = 0 are failures)
@@ -46,7 +46,7 @@ FROM (SELECT DISTINCT trip_id FROM trip_updates) u
 LEFT JOIN gtfs_trips g ON g.trip_id = u.trip_id;
 
 -- 6. Live predictions vs placeholder rows
---    Rows with no vehicle or no delay may be schedule placeholders for trips that haven't started.
+--Rows with no vehicle or no delay may be schedule placeholders for trips that haven't started.
 SELECT COUNT(*) AS rows_total,
        SUM(vehicle_id IS NOT NULL) AS with_vehicle,
        SUM(arrival_delay IS NOT NULL) AS with_arrival_delay,
