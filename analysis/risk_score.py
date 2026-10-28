@@ -1,10 +1,9 @@
 """
 Turn labeled transfer outcomes into risk tables for the dashboard.
-
 Usage (from the project folder):
     python analysis/risk_score.py --db data/ets.db --out dashboard
-    python analysis/risk_score.py --weekday-only          # ignore weekends/holidays
-    python analysis/risk_score.py --min-n 30              # stricter sample-size rule
+    python analysis/risk_score.py --weekday-only          #ignore weekends/holidays
+    python analysis/risk_score.py --min-n 30              #stricter sample-size rule
 
 Reads the table `transfer_outcomes` (built by sql/10_transfer_outcomes.sql) and writes
 CSV files you can open in Tableau:
@@ -36,14 +35,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# ---- Settings you can change (and should explain in your README) ----
-MIN_N = 20                # outcomes needed before a group gets a risk label
-LOW_CUTOFF = 0.90         # success rate at or above this  -> Low risk
-HIGH_CUTOFF = 0.75        # success rate below this        -> High risk
-MIN_TRANSFER_SECS = 60    # must match min_transfer_secs in transfer_params
-HOLIDAYS = {20261012}     # service dates running holiday service (Thanksgiving 2026)
+MIN_N = 20                #outcomes needed before a group gets a risk label
+LOW_CUTOFF = 0.90         #success rate at or above this  -> Low risk
+HIGH_CUTOFF = 0.75        #success rate below this        -> High risk
+MIN_TRANSFER_SECS = 60    #must match min_transfer_secs in transfer_params
+HOLIDAYS = {20261012}     #service dates running holiday service (Thanksgiving 2026)
 
-TIME_BUCKETS = [          # (label, first hour inclusive, last hour exclusive); hours can pass 24
+TIME_BUCKETS = [          #(label, first hour inclusive, last hour exclusive); hours can pass 24
     ("1 Early (before 6)", 0, 6),
     ("2 AM peak (6-9)", 6, 9),
     ("3 Midday (9-15)", 9, 15),
@@ -53,7 +51,6 @@ TIME_BUCKETS = [          # (label, first hour inclusive, last hour exclusive); 
 ]
 WINDOW_BINS = [60, 120, 180, 300, 480, 720, 1200, 1800]
 WINDOW_LABELS = ["1-2 min", "2-3 min", "3-5 min", "5-8 min", "8-12 min", "12-20 min", "20-30 min"]
-
 
 def wilson(made, n, z=1.96):
     """95% Wilson score interval for a success rate."""
@@ -65,7 +62,6 @@ def wilson(made, n, z=1.96):
     half = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
     return centre - half, centre + half
 
-
 def time_bucket(secs):
     hour = secs // 3600
     for label, lo, hi in TIME_BUCKETS:
@@ -73,18 +69,15 @@ def time_bucket(secs):
             return label
     return TIME_BUCKETS[-1][0]
 
-
 def day_type(service_date):
     if service_date in HOLIDAYS:
         return "Holiday"
     dow = pd.to_datetime(str(service_date), format="%Y%m%d").dayofweek
     return "Weekday" if dow < 5 else ("Saturday" if dow == 5 else "Sunday")
 
-
 def route_base(name):
     """'918A' -> '918'. Used to flag A/B variants of the same line."""
     return re.sub(r"[A-Za-z]+$", "", str(name))
-
 
 def risk_label(n, success_rate, min_n):
     if n < min_n:
@@ -94,7 +87,6 @@ def risk_label(n, success_rate, min_n):
     if success_rate < HIGH_CUTOFF:
         return "High risk"
     return "Medium risk"
-
 
 def summarise(df, keys, min_n):
     """One row per group with counts, success rate, interval, buffer and risk label."""
@@ -115,14 +107,12 @@ def summarise(df, keys, min_n):
     out = out.drop(columns=["needed_p90_secs"])
     return out.round(3)
 
-
 def show(title, df, cols, rows=10):
     print(f"\n=== {title} ===")
     if df.empty:
         print("(nothing to show)")
     else:
         print(df[cols].head(rows).to_string(index=False))
-
 
 def main():
     ap = argparse.ArgumentParser(description="Build transfer risk tables for the dashboard.")
@@ -145,18 +135,18 @@ def main():
     if df.empty:
         raise SystemExit("transfer_outcomes is empty. Run sql/10_transfer_outcomes.sql first.")
 
-    # --- derived columns ---
+    #derived columns
     df["day_type"] = df["service_date"].map(day_type)
     df["time_bucket"] = (df["sched_arr_secs"]).map(time_bucket)
     df["pair"] = df["feeder_route_name"] + " -> " + df["connector_route_name"]
     df["same_line_flag"] = df["feeder_route_name"].map(route_base) == df["connector_route_name"].map(route_base)
-    # scheduled window that this transfer would have needed in order to succeed
+    # cheduled window that this transfer would have needed in order to succeed
     df["needed_secs"] = MIN_TRANSFER_SECS + df["feeder_delay_secs"] - df["connector_delay_secs"]
 
     Path(args.out).mkdir(parents=True, exist_ok=True)
     df.to_csv(Path(args.out) / "outcomes.csv", index=False)
 
-    # --- what data do we have? ---
+    #what data do we have?
     print("=== Data you have ===")
     per_date = (df.groupby(["service_date", "day_type"]).agg(outcomes=("made", "size"), made=("made", "sum"))
                 .reset_index())
@@ -178,7 +168,7 @@ def main():
     print(f"\nOverall: {work['made'].sum()} of {len(work)} transfers made "
           f"({100 * work['made'].mean():.1f}%; plausible range {100 * lo:.1f}% to {100 * hi:.1f}%)")
 
-    # --- the tables ---
+    #the tables
     pair = summarise(work, ["feeder_route_name", "connector_route_name"], args.min_n)
     pair["same_line_flag"] = (pair["feeder_route_name"].map(route_base) == pair["connector_route_name"].map(route_base))
     pair = pair.sort_values(["n"], ascending=False)
@@ -195,7 +185,7 @@ def main():
     time.to_csv(Path(args.out) / "time_risk.csv", index=False)
     curve.to_csv(Path(args.out) / "buffer_curve.csv", index=False)
 
-    # --- what can you honestly say? ---
+    #what can you honestly say?
     labelled = pair[pair["n"] >= args.min_n]
     print(f"\nRoute pairs: {len(pair)} seen, {len(labelled)} with at least {args.min_n} outcomes "
           f"({int(pair['same_line_flag'].sum())} look like same-line variants)")
@@ -213,7 +203,6 @@ def main():
          ["window_band", "n", "success_rate", "ci_low", "ci_high", "avg_headway_after_min"], rows=10)
 
     print(f"\nCSV files written to {args.out}/")
-
 
 if __name__ == "__main__":
     main()
