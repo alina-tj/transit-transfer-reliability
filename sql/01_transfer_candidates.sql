@@ -1,17 +1,13 @@
 -- 01_transfer_candidates.sql  (multi-date version)
 -- Builds scheduled transfer candidates at the busiest "hub" stops for EVERY service
 -- date listed in transfer_dates.
---
 -- By default transfer_dates is filled with every start_date found in your collected
--- trip_updates, so candidates exist for exactly the days you have realtime data for.
--- To add a date manually (e.g. a future weekday):
---   INSERT OR IGNORE INTO transfer_dates VALUES (20261013);
---
+-- trip_updates so candidates exist for exactly the days you have realtime data for.
+-- To add a date manually (e.g. a future weekday),INSERT OR IGNORE INTO transfer_dates VALUES (20261013);
 -- A candidate is: a feeder trip arriving at a hub stop, and for each OTHER route
 -- (and direction) serving that same stop, the first scheduled departure that is at
 -- least min_transfer_secs after the feeder's scheduled arrival (within max_window_secs).
 -- Same-line variants (same route_short_name) are not counted as transfers.
---
 -- Version 1 limitations (document these in the README):
 --   * same-stop transfers only (no walking between bays or nearby stops)
 --   * requires SQLite 3.25+ (window functions)
@@ -27,7 +23,7 @@ INSERT OR IGNORE INTO transfer_params VALUES ('min_transfer_secs', 60);
 INSERT OR IGNORE INTO transfer_params VALUES ('max_window_secs', 1800);
 INSERT OR IGNORE INTO transfer_params VALUES ('hub_min_routes', 5);
 INSERT OR IGNORE INTO transfer_params VALUES ('hub_limit', 30);
--- (older versions used a single 'service_date' parameter; dates now come from transfer_dates)
+--(older versions used a single 'service_date' parameter; dates now come from transfer_dates)
 DELETE FROM transfer_params WHERE key = 'service_date';
 
 CREATE TABLE IF NOT EXISTS transfer_dates (service_date INTEGER PRIMARY KEY);
@@ -36,7 +32,7 @@ SELECT DISTINCT CAST(start_date AS INTEGER)
 FROM trip_updates
 WHERE start_date GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]';
 
--- Services running on each date (works with calendar.txt, calendar_dates.txt, or both).
+-- Services running on each date (works with calendar.txt, calendar_dates.txt, or both)
 DROP TABLE IF EXISTS active_services;
 CREATE TABLE active_services AS
 WITH d AS (
@@ -63,7 +59,7 @@ WHERE CASE d.dow WHEN '0' THEN c.sunday WHEN '1' THEN c.monday WHEN '2' THEN c.t
   );
 CREATE INDEX ix_active ON active_services(service_id, service_date);
 
--- CHECK THIS: every date should have active_services well above 0 (0 = date outside the feed's range).
+-- CHECK THIS- every date should have active_services well above 0 (0 = date outside the feed's range).
 SELECT d.service_date, COUNT(a.service_id) AS active_services
 FROM transfer_dates d
 LEFT JOIN active_services a ON a.service_date = d.service_date
@@ -108,8 +104,7 @@ WHERE st.stop_sequence > b.first_seq
 CREATE INDEX ix_feeder_stop ON tmp_feeder(service_date, stop_id);
 
 -- Boardable departures at hubs (a passenger can't board at a trip's last stop).
--- next_dep_secs = the connector route's following departure, used to estimate the
--- wait after missing the connection.
+-- next_dep_secs = the connector route's following departure, used to estimate the wait after missing the connection.
 DROP TABLE IF EXISTS tmp_connector;
 CREATE TABLE tmp_connector AS
 SELECT service_date, trip_id, stop_id, route_id, route_name, direction_id, dep_secs,
