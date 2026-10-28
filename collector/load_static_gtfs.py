@@ -1,9 +1,6 @@
 """
 Load a static GTFS zip (ETS schedule) into the project SQLite database.
-
-Usage:
-    python collector/load_static_gtfs.py path/to/gtfs.zip --db data/ets.db
-
+Usage: python collector/load_static_gtfs.py path/to/gtfs.zip --db data/ets.db
 Creates (or replaces) tables: gtfs_routes, gtfs_stops, gtfs_trips,
 gtfs_stop_times, gtfs_calendar, gtfs_calendar_dates, gtfs_meta.
 
@@ -40,14 +37,12 @@ INT_COLS = {
 REAL_COLS = {"stop_lat", "stop_lon", "shape_dist_traveled"}
 BATCH = 50_000
 
-
 def to_secs(value):
     """'HH:MM:SS' -> seconds after midnight (HH may be >= 24). Empty -> None."""
     if not value or not value.strip():
         return None
     h, m, s = value.strip().split(":")
     return int(h) * 3600 + int(m) * 60 + int(s)
-
 
 def convert(col, value):
     value = value.strip()
@@ -62,13 +57,11 @@ def convert(col, value):
         return value
     return value
 
-
 def find_member(zf, filename):
     for name in zf.namelist():
         if name.split("/")[-1].lower() == filename:
             return name
     return None
-
 
 def load_table(conn, zf, table, member):
     t0 = time.time()
@@ -118,7 +111,6 @@ def load_table(conn, zf, table, member):
     conn.commit()
     print(f"  gtfs_{table}: {total:,} rows ({time.time() - t0:.1f}s)")
 
-
 def make_indexes(conn):
     stmts = [
         "CREATE INDEX IF NOT EXISTS ix_routes_id ON gtfs_routes(route_id)",
@@ -131,7 +123,6 @@ def make_indexes(conn):
     for s in stmts:
         conn.execute(s)
     conn.commit()
-
 
 def main():
     ap = argparse.ArgumentParser(description="Load static GTFS zip into SQLite.")
@@ -162,7 +153,6 @@ def main():
     conn.commit()
     conn.close()
     print("Done.")
-
 
 if __name__ == "__main__":
     main()
