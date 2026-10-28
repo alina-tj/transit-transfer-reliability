@@ -1,14 +1,11 @@
 """
 ETS GTFS-Realtime collector.
-
 Polls the Edmonton Transit System TripUpdates and VehiclePositions feeds on a
 fixed interval and appends normalized rows to a SQLite database. Every poll
-(success or failure) is logged in `poll_log`, so you can measure coverage and
-gaps later -- important for honest analysis.
+(success or failure) is logged in `poll_log` so you can measure coverage and
+gaps later (important for honest analysis).
 
-Usage:
-    python collector/collect.py --db data/ets.db --interval 60
-
+Usage: python collector/collect.py --db data/ets.db --interval 60
 Stop with Ctrl+C (finishes the current poll cleanly).
 """
 
@@ -80,17 +77,14 @@ CREATE TABLE IF NOT EXISTS vehicle_positions (
 log = logging.getLogger("ets-collector")
 _running = True
 
-
 def _stop(*_):
     global _running
     _running = False
     log.info("Shutdown requested; finishing current poll.")
 
-
 def opt(msg, field):
     """Return a protobuf optional field's value, or None if it isn't set."""
     return getattr(msg, field) if msg.HasField(field) else None
-
 
 def fetch_feed(url, timeout=20):
     resp = requests.get(url, timeout=timeout)
@@ -98,7 +92,6 @@ def fetch_feed(url, timeout=20):
     feed = gtfs_realtime_pb2.FeedMessage()
     feed.ParseFromString(resp.content)
     return feed
-
 
 def parse_trip_updates(feed, fetched_at, stops_per_trip):
     feed_ts = opt(feed.header, "timestamp")
@@ -119,8 +112,8 @@ def parse_trip_updates(feed, fetched_at, stops_per_trip):
         if stops_per_trip > 0:
             updates = updates[:stops_per_trip]
         if not updates:
-            # Trip with no stop updates (e.g. canceled): keep a row for it.
-            rows.append(base + (None,) * 7)  # the 7 stop-level columns
+            #Trip with no stop updates (e.g. canceled): keep a row for it.
+            rows.append(base + (None,) * 7)  #the 7 stop-level columns
             continue
         for stu in updates:
             arr = stu.arrival if stu.HasField("arrival") else None
@@ -137,7 +130,6 @@ def parse_trip_updates(feed, fetched_at, stops_per_trip):
                 )
             )
     return feed_ts, rows
-
 
 def parse_vehicle_positions(feed, fetched_at):
     feed_ts = opt(feed.header, "timestamp")
@@ -164,10 +156,8 @@ def parse_vehicle_positions(feed, fetched_at):
         ))
     return feed_ts, rows
 
-
 TU_INSERT = "INSERT INTO trip_updates (fetched_at, feed_timestamp, trip_id, route_id, direction_id, start_date, start_time, trip_schedule_relationship, vehicle_id, stop_sequence, stop_id, arrival_delay, arrival_time, departure_delay, departure_time, stop_schedule_relationship) VALUES (" + ",".join("?" * 16) + ")"
 VP_INSERT = "INSERT INTO vehicle_positions (fetched_at, feed_timestamp, vehicle_id, trip_id, route_id, direction_id, start_date, latitude, longitude, bearing, speed, current_stop_sequence, stop_id, current_status, vehicle_timestamp, occupancy_status) VALUES (" + ",".join("?" * 16) + ")"
-
 
 def poll_once(conn, name, url, parser, insert_sql, fetched_at):
     try:
@@ -222,7 +212,6 @@ def main():
 
     conn.close()
     log.info("Stopped.")
-
 
 if __name__ == "__main__":
     main()
